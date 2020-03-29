@@ -45,7 +45,22 @@ Simple plots using `tidyverse`
 Total and daily number of confirmed infections
 ----------------------------------------------
 
+``` r
+covid19_arg<-covid19_arg %>% mutate(date=mdy(date))
+covid19_arg %>% ggplot()+
+  geom_col(aes(x=date,y=total_cases),fill='orange')+
+  geom_line(aes(x=date,y=new_cases),fill='green')+
+  geom_point(aes(x=date,y=new_cases),fill='green',size=2)+
+    ylab("confirmed infections")+
+  theme_bw()+
+    scale_x_date(date_breaks = "1 day", date_labels = "%d %b")+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  ggsave("images/total.png",height = 3,width = 4)
+```
+
 ![](README_files/figure-markdown_github/pressure-1.png)
+
+![](./images/total.png)
 
 Total and daily number of confirmed deaths
 ------------------------------------------
@@ -58,10 +73,11 @@ covid19_arg %>% ggplot()+
     ylab("confirmed deaths")+
   scale_x_date(date_breaks = "1 day", date_labels = "%d %b")+
   theme_bw()+
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  ggsave("images/totaldeaths.png",height = 3,width =4)
 ```
 
-![](README_files/figure-markdown_github/unnamed-chunk-4-1.png)
+![](README_files/figure-markdown_github/unnamed-chunk-4-1.png) ![](./images/totaldeaths.png)
 
 Total number of deaths per province
 -----------------------------------
@@ -74,10 +90,11 @@ covid19_arg[,c(12:27)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covi
     ylab("confirmed infections")+
   #scale_x_date(date_breaks = "1 day", date_labels = "%d %b")+
   theme_bw()+
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  ggsave("images/deathsperprovinces.png",height = 3,width =4)
 ```
 
-![](README_files/figure-markdown_github/unnamed-chunk-5-1.png)
+![](README_files/figure-markdown_github/unnamed-chunk-5-1.png) ![](./images/deathsperprovinces.png)
 
 Infections per day in some provinces
 ------------------------------------
@@ -92,7 +109,8 @@ ggplot()+
   ylab("new infections per day")+
    scale_x_date(date_breaks = "1 day", date_labels = "%d %b")+
   theme_bw()+
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  ggsave("images/totalprovinces.png",height = 3,width =4)
 ```
 
-![](README_files/figure-markdown_github/unnamed-chunk-6-1.png)
+![](README_files/figure-markdown_github/unnamed-chunk-6-1.png) ![](./images/totalprovinces.png)
