@@ -96,29 +96,8 @@ covid19_arg[,c(12:27)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covi
 
 ![](README_files/figure-markdown_github/unnamed-chunk-5-1.png) ![](./images/deathsperprovinces.png)
 
-Infections per day in some provinces
+Top 6 provinces with confirmed cases
 ------------------------------------
-
-``` r
-covid19_arg[,c(12:27)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%
-  pivot_longer(-date,names_to = "Province", values_to = "total") %>% filter( Province %in% c("CABA","Buenos Aires","Córdoba")) %>% 
-ggplot()+
-  geom_line(aes(x=date,y=total,color=Province))+
-  geom_point(aes(x=date,y=total,color=Province),size=2)+
-  #geom_line(aes(x=date,y=total))+
-  ylab("new infections per day")+
-   scale_x_date(date_breaks = "1 day", date_labels = "%d %b")+
-  theme_bw()+
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
-  ggsave("images/totalprovinces.png",height = 2,width =6)
-```
-
-![](README_files/figure-markdown_github/unnamed-chunk-6-1.png)
-
-![](./images/totalprovinces.png)
-
-Top number of Infections provinces
-----------------------------------
 
 ``` r
 top_5<-covid19_arg[,c(12:27)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%
@@ -131,13 +110,39 @@ covid19_arg[,c(12:27)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covi
   geom_line(aes(x=date,y=cumulative_cases,color=Province))+
   geom_point(aes(x=date,y=cumulative_cases,color=Province),size=2)+
   #geom_line(aes(x=date,y=total))+
-  ylab("cumulative infections per day")+
+  ylab("cumulative infections per day [log]")+
    scale_x_date(date_breaks = "1 day", date_labels = "%d %b")+
   theme_bw()+
+  scale_y_continuous(trans='log10')+
   theme(axis.text.x = element_text(angle = 45, hjust = 1))+
   ggsave("images/cumulativeperprovincestop5.png",height = 2,width =6)
 ```
 
-![](README_files/figure-markdown_github/unnamed-chunk-7-1.png)
+![](README_files/figure-markdown_github/unnamed-chunk-6-1.png)
 
 ![](./images/cumulativeperprovincestop5.png)
+
+Infections per day in Top 6 provinces with confirmed cases
+----------------------------------------------------------
+
+``` r
+top_5<-covid19_arg[,c(12:27)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%
+  pivot_longer(-date,names_to = "Province", values_to = "total") %>% group_by(Province) %>% summarise(total_cases=sum(total)) %>%  top_n(6) %>% select(Province)
+
+covid19_arg[,c(12:27)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%
+  pivot_longer(-date,names_to = "Province", values_to = "total") %>% filter( Province %in% unlist(as.list(top_5))) %>% 
+ggplot()+
+  geom_col(aes(x=date,y=total))+
+  #geom_point(aes(x=date,y=total,color=Province),size=2)+
+  #geom_line(aes(x=date,y=total))+
+  ylab("new infections per day")+
+   scale_x_date(date_breaks = "1 day", date_labels = "%d %b")+
+  theme_bw()+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  facet_wrap(~Province, ncol = 3)+
+  ggsave("images/totalprovinces.png",height = 2,width =6)
+```
+
+![](README_files/figure-markdown_github/unnamed-chunk-7-1.png)
+
+![](./images/totalprovinces.png)
