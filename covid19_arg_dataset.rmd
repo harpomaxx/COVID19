@@ -1,0 +1,66 @@
+---
+title: "ARG COVID19 Dataset"
+output: html_notebook
+---
+
+The dataset was produced using only the official information provided by the Argentine Ministry of Health. 
+*Available here*
+
+```{r}
+covid19_arg<-read_delim("COVID19_ARG.tsv",delim ='\t')
+```
+# Number of confirmed infections 
+```{r}
+covid19_arg<-covid19_arg %>% mutate(date=mdy(date))
+covid19_arg %>% ggplot()+
+  geom_col(aes(x=date,y=total_cases),fill='orange')+
+  geom_line(aes(x=date,y=new_cases),fill='green')+
+  geom_point(aes(x=date,y=new_cases),fill='green',size=2)+
+
+    ylab("confirmed infections")+
+  theme_bw()+
+    scale_x_date(date_breaks = "1 day", date_labels = "%d %b")+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
+```
+# Number of Confirmed Deaths
+```{r}
+covid19_arg %>% ggplot()+
+  geom_col(aes(x=date,y=total_deaths),fill='red')+
+  geom_line(aes(x=date,y=new_deaths),fill='green')+
+  geom_point(aes(x=date,y=new_deaths),fill='green',size=2)+
+
+    ylab("confirmed deaths")+
+  scale_x_date(date_breaks = "1 day", date_labels = "%d %b")+
+  theme_bw()+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+#Number of Deaths per province
+```{r}
+
+covid19_arg[,c(12:27)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%
+  pivot_longer(-date,names_to = "Province", values_to = "total") %>% group_by(Province) %>% summarise(total_cases=sum(total)) %>% arrange((total_cases)) %>%
+  
+  ggplot()+
+  geom_col(aes(x=Province,y=total_cases),fill='orange')+
+    ylab("confirmed infections")+
+  #scale_x_date(date_breaks = "1 day", date_labels = "%d %b")+
+  theme_bw()+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+# Infections per day in some provinces
+```{r}
+covid19_arg[,c(12:27)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%
+  pivot_longer(-date,names_to = "Province", values_to = "total") %>% filter( Province %in% c("CABA","Buenos Aires","Córdoba")) %>% 
+ggplot()+
+  geom_line(aes(x=date,y=total,color=Province))+
+  geom_point(aes(x=date,y=total,color=Province),size=4)+
+  #geom_line(aes(x=date,y=total))+
+  ylab("new infections per day")+
+   scale_x_date(date_breaks = "1 day", date_labels = "%d %b")+
+  theme_bw()+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  #facet_wrap(~Province)
+```
+```
+
