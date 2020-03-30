@@ -26,8 +26,9 @@ names(covid19_arg)
     ## [23] "Río Negro"             "Salta"                
     ## [25] "San Luis"              "Santa Cruz"           
     ## [27] "Santa Fe"              "Santiago del Estero"  
-    ## [29] "Tierra del Fuego"      "Tucumán"              
-    ## [31] "X31"
+    ## [29] "Tierra del Fuego"      "San Juan"             
+    ## [31] "La Rioja"              "Tucumán"              
+    ## [33] "X33"
 
 Example
 =======
@@ -140,7 +141,7 @@ ggplot()+
   theme_bw()+
   theme(axis.text.x = element_text(angle = 45, hjust = 1))+
   facet_wrap(~Province, ncol = 3)+
-  ggsave("images/totalprovinces.png",height = 2,width =6)
+  ggsave("images/totalprovinces.png",height = 4,width =6)
 ```
 
 ![](README_files/figure-markdown_github/unnamed-chunk-7-1.png)
