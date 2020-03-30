@@ -147,3 +147,10 @@ ggplot()+
 ![](README_files/figure-markdown_github/unnamed-chunk-7-1.png)
 
 ![](./images/totalprovinces.png)
+
+Simple SIR model for CABA and Santa Fe
+--------------------------------------
+
+Model adapted from [Tim Churches's](https://timchurches.github.io/blog/posts/2020-02-18-analysing-covid-19-2019-ncov-outbreak-data-with-r-part-1) blog.
+
+![](./images/sirCABA.png) ![](./images/sirSanta%20Fe.png)
