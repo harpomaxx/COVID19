@@ -13,22 +13,23 @@ names(covid19_arg)
 ```
 
     ##  [1] "date"                  "total_cases"          
-    ##  [3] "total_deaths"          "total_imported%"      
-    ##  [5] "total_local_contact%"  "total_under_analysis%"
-    ##  [7] "new_cases"             "new_deaths"           
-    ##  [9] "local_contact"         "imported"             
-    ## [11] "under_analysis"        "CABA"                 
-    ## [13] "Buenos Aires"          "Chaco"                
-    ## [15] "Córdoba"               "Corrientes"           
-    ## [17] "Entre Ríos"            "Jujuy"                
-    ## [19] "La Pampa"              "Mendoza"              
-    ## [21] "Misiones"              "Neuquén"              
-    ## [23] "Río Negro"             "Salta"                
-    ## [25] "San Luis"              "Santa Cruz"           
-    ## [27] "Santa Fe"              "Santiago del Estero"  
-    ## [29] "Tierra del Fuego"      "San Juan"             
-    ## [31] "La Rioja"              "Tucumán"              
-    ## [33] "X33"
+    ##  [3] "total_deaths"          "total_recovered"      
+    ##  [5] "total_tests_negatives" "total_tests"          
+    ##  [7] "total_imported%"       "total_local_contact%" 
+    ##  [9] "total_under_analysis%" "new_cases"            
+    ## [11] "new_deaths"            "local_contact"        
+    ## [13] "imported"              "under_analysis"       
+    ## [15] "CABA"                  "Buenos Aires"         
+    ## [17] "Chaco"                 "Córdoba"              
+    ## [19] "Corrientes"            "Entre Ríos"           
+    ## [21] "Jujuy"                 "La Pampa"             
+    ## [23] "Mendoza"               "Misiones"             
+    ## [25] "Neuquén"               "Río Negro"            
+    ## [27] "Salta"                 "San Luis"             
+    ## [29] "Santa Cruz"            "Santa Fe"             
+    ## [31] "Santiago del Estero"   "Tierra del Fuego"     
+    ## [33] "San Juan"              "La Rioja"             
+    ## [35] "Tucumán"               "X36"
 
 Example
 =======
@@ -148,9 +149,11 @@ ggplot()+
 
 ![](./images/totalprovinces.png)
 
-Simple SIR model for CABA and Santa Fe
---------------------------------------
+Simple SIR model for ARG Forcasting for next 5 days
+---------------------------------------------------
 
 Model adapted from [Tim Churches's](https://timchurches.github.io/blog/posts/2020-02-18-analysing-covid-19-2019-ncov-outbreak-data-with-r-part-1) blog.
 
-![](./images/sirCABA.png) ![](./images/sirSanta%20Fe.png)
+![](./images/sir_Argentina.png)
+
+![](./images/seir_Argentina.png)
