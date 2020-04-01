@@ -138,8 +138,11 @@ ggplot()+
 
 ![](./images/totalprovinces.png)
 
-## Simple SIR model for CABA and Santa Fe
+## Simple SIR model for ARG Forcasting for next 5 days
+
 Model adapted from [Tim Churches's](https://timchurches.github.io/blog/posts/2020-02-18-analysing-covid-19-2019-ncov-outbreak-data-with-r-part-1) blog.
 
-![](./images/sirCABA.png)
-![](./images/sirSanta Fe.png)
+![](./images/sir_Argentina.png)
+
+![](./images/seir_Argentina.png)
+
