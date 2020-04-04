@@ -156,4 +156,4 @@ Model adapted from [Tim Churches's](https://timchurches.github.io/blog/posts/202
 
 ![](./images/sir_Argentina.png)
 
-![](./images/seir_Argentina.png)
+![](./images/geseir_Argentina.png)
