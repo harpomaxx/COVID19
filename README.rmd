@@ -92,10 +92,10 @@ covid19_arg[,c(12:27)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covi
 
 ```{r message=FALSE, warning=FALSE}
 
-top_5<-covid19_arg[,c(12:27)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%
+top_5<-covid19_arg[,c(12:33)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%
   pivot_longer(-date,names_to = "Province", values_to = "total") %>% group_by(Province) %>% summarise(total_cases=sum(total)) %>%  top_n(5) %>% select(Province)
 
-covid19_arg[,c(12:27)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%group_by(date) %>%
+covid19_arg[,c(12:33)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%group_by(date) %>%
   pivot_longer(-date,names_to = "Province", values_to = "new_cases") %>% group_by(Province) %>% mutate(cumulative_cases=cumsum(new_cases)) %>% arrange(desc(cumulative_cases)) %>% filter( Province %in% unlist(as.list(top_5))) %>% 
 
   ggplot()+
@@ -119,10 +119,10 @@ covid19_arg[,c(12:27)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covi
 
 ```{r message=FALSE, warning=FALSE}
 
-top_5<-covid19_arg[,c(12:27)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%
+top_5<-covid19_arg[,c(12:33)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%
   pivot_longer(-date,names_to = "Province", values_to = "total") %>% group_by(Province) %>% summarise(total_cases=sum(total)) %>%  top_n(6) %>% select(Province)
 
-covid19_arg[,c(12:27)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%
+covid19_arg[,c(12:33)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%
   pivot_longer(-date,names_to = "Province", values_to = "total") %>% filter( Province %in% unlist(as.list(top_5))) %>% 
 ggplot()+
   geom_col(aes(x=date,y=total))+
@@ -144,5 +144,5 @@ Model adapted from [Tim Churches's](https://timchurches.github.io/blog/posts/202
 
 ![](./images/sir_Argentina.png)
 
-![](./images/seir_Argentina.png)
+![](./images/geseir_Argentina.png)
 

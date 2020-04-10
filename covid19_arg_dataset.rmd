@@ -5,6 +5,15 @@ output: html_notebook
 
 The dataset was produced using only the official information provided by the Argentine Ministry of Health. 
 *Available here*
+```{r}
+suppressMessages(library(ggplot2))
+suppressMessages(library(dplyr))
+suppressMessages(library(readr))
+suppressMessages(library(lubridate))
+library(tidyr)
+library(tibble)
+```
+
 
 ```{r}
 covid19_arg<-read_delim("COVID19_ARG.tsv",delim ='\t')

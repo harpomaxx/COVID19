@@ -12,24 +12,23 @@ The dataset contains daily information from mars 5th, when the first case was re
 names(covid19_arg)
 ```
 
-    ##  [1] "date"                  "total_cases"          
-    ##  [3] "total_deaths"          "total_recovered"      
-    ##  [5] "total_tests_negatives" "total_tests"          
-    ##  [7] "total_imported%"       "total_local_contact%" 
-    ##  [9] "total_under_analysis%" "new_cases"            
-    ## [11] "new_deaths"            "local_contact"        
-    ## [13] "imported"              "under_analysis"       
-    ## [15] "CABA"                  "Buenos Aires"         
-    ## [17] "Chaco"                 "Córdoba"              
-    ## [19] "Corrientes"            "Entre Ríos"           
-    ## [21] "Jujuy"                 "La Pampa"             
-    ## [23] "Mendoza"               "Misiones"             
-    ## [25] "Neuquén"               "Río Negro"            
-    ## [27] "Salta"                 "San Luis"             
-    ## [29] "Santa Cruz"            "Santa Fe"             
-    ## [31] "Santiago del Estero"   "Tierra del Fuego"     
-    ## [33] "San Juan"              "La Rioja"             
-    ## [35] "Tucumán"               "X36"
+    ##  [1] "date"                    "total_cases"            
+    ##  [3] "total_deaths"            "total_recovered"        
+    ##  [5] "total_tests_negatives"   "total_tests"            
+    ##  [7] "total_imported%"         "total_imported_contact%"
+    ##  [9] "total_comunitary%"       "total_under_analysis%"  
+    ## [11] "new_cases"               "new_deaths"             
+    ## [13] "CABA"                    "Buenos Aires"           
+    ## [15] "Chaco"                   "Córdoba"                
+    ## [17] "Corrientes"              "Entre Ríos"             
+    ## [19] "Jujuy"                   "La Pampa"               
+    ## [21] "Mendoza"                 "Misiones"               
+    ## [23] "Neuquén"                 "Río Negro"              
+    ## [25] "Salta"                   "San Luis"               
+    ## [27] "Santa Cruz"              "Santa Fe"               
+    ## [29] "Santiago del Estero"     "Tierra del Fuego"       
+    ## [31] "San Juan"                "La Rioja"               
+    ## [33] "Tucumán"                 "X34"
 
 Example
 =======
@@ -102,10 +101,10 @@ Top 6 provinces with confirmed cases
 ------------------------------------
 
 ``` r
-top_5<-covid19_arg[,c(12:27)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%
+top_5<-covid19_arg[,c(12:33)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%
   pivot_longer(-date,names_to = "Province", values_to = "total") %>% group_by(Province) %>% summarise(total_cases=sum(total)) %>%  top_n(5) %>% select(Province)
 
-covid19_arg[,c(12:27)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%group_by(date) %>%
+covid19_arg[,c(12:33)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%group_by(date) %>%
   pivot_longer(-date,names_to = "Province", values_to = "new_cases") %>% group_by(Province) %>% mutate(cumulative_cases=cumsum(new_cases)) %>% arrange(desc(cumulative_cases)) %>% filter( Province %in% unlist(as.list(top_5))) %>% 
 
   ggplot()+
@@ -128,10 +127,10 @@ Infections per day in Top 6 provinces with confirmed cases
 ----------------------------------------------------------
 
 ``` r
-top_5<-covid19_arg[,c(12:27)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%
+top_5<-covid19_arg[,c(12:33)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%
   pivot_longer(-date,names_to = "Province", values_to = "total") %>% group_by(Province) %>% summarise(total_cases=sum(total)) %>%  top_n(6) %>% select(Province)
 
-covid19_arg[,c(12:27)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%
+covid19_arg[,c(12:33)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%
   pivot_longer(-date,names_to = "Province", values_to = "total") %>% filter( Province %in% unlist(as.list(top_5))) %>% 
 ggplot()+
   geom_col(aes(x=date,y=total))+

@@ -43,8 +43,11 @@ cumulative_recover$Province=province
 cumulative_recover<-cumulative_recover %>% mutate(Date=mdy(Date))
 
 
-sir_start_date <- today()-15
-sir_fitted_date <- sir_start_date + 10
+sir_start_date <- today()-20
+sir_fitted_date <- today()-2
+t <- 1:as.integer(ymd(sir_fitted_date) - ymd(sir_start_date)+7)
+
+#sir_fitted_date <- sir_start_date + 10
 Infected <- cumulative_incidence %>%filter(Province == province, 
                                            Date >= ymd(sir_start_date), 
                                            Date <= ymd(sir_fitted_date)) %>% 
@@ -56,6 +59,8 @@ Recovered <- cumulative_recover %>%filter(Province == province,
   pull(recovered_cases)
 
 
+
+Exposed <- Infected
 Infected <- Infected - Recovered
 
 # Create an incrementing Day vector the same length as our
@@ -65,17 +70,8 @@ N=40480000
 
 
 # now specify initial values for S, I and R
-init <- c(S = N - Infected[1], E=0, I = Infected[1], R = Recovered[1])
+init <- c(S = N - Infected[1]-Exposed[1], E=Exposed[1], I = Infected[1], R = Recovered[1])
 
-SIR <- function(time, state, parameters) {
-  par <- as.list(c(state, parameters))
-  with(par, {
-    dS <- -beta * I * S/N
-    dI <- beta * I * S/N - gamma * I
-    dR <- gamma * I
-    list(c(dS, dI, dR))
-  })
-}
 
 SEIR <- function (current_timepoint, state_values, parameters)
 {
@@ -111,11 +107,11 @@ RSS <- function(parameters) {
   names(parameters) <- c("beta", "gamma","sigma")
   out <- ode(y = init, times = Day, func = SEIR, parms = parameters)
   
-  fit1 <- out[, 3]
-  fit2 <-out[,4]
+  fit1 <- out[, 4]
+  fit2 <-out[,5]
   alpha = 0.1
-  l1 = sqrt(mean((Recovered-fit2)**2))
-  l2= sqrt(mean(sum((Infected - fit1)^2)))
+  l1 = sqrt(mean(sum((Recovered-fit2)**2)))
+  l2=  sqrt(mean(sum((Infected - fit1)**2)))
   
   return (alpha * l1 + (1 - alpha) * l2)
   
@@ -137,19 +133,17 @@ sigma_guess<-1/Y
 
 
 Opt <- optim(c(beta_guess,gamma_guess,sigma_guess), RSS, method = "L-BFGS-B",
-             upper = c(1,1,1), lower = c(0,0,0),
+             upper = c(2,2,2), lower = c(0,0,0),
              hessian = T) 
 
 Opt_par <- setNames(Opt$par, c("beta", "gamma","sigma"))
+Ro=Opt_par[1]/Opt_par[2]
+Ro
 
-#Opt_par[1]=beta_guess
-#Opt_par[2]=gamma_guess
-#Opt_par[3]=sigma_guess
 
 #print(Opt_par)
 # time in days for predictions
-t <- 1:as.integer(today() - ymd(sir_start_date))
-t <- 1:as.integer(ymd(sir_fitted_date) - ymd(sir_start_date)+10)
+#t <- 1:as.integer(today() - ymd(sir_start_date))
 # get the fitted values from our SIR model
 fitted_cumulative_incidence <- data.frame(ode(y = init, times = t, 
                                               func = SEIR, parms = Opt_par))
@@ -166,11 +160,11 @@ fitted_cumulative_incidence <-fitted_cumulative_incidence %>%
               select(Date,recovered_cases) %>% 
               mutate(Date=mdy(Date)),by="Date")
 # plot the data
-fitted_cumulative_incidence %>% filter(Date >= ymd(sir_start_date)) %>% 
-  ggplot(aes(x = Date)) + 
-  #geom_line(aes(y = I), colour = "red") + 
-  geom_line(aes(y = E), colour = "blue") + 
-  geom_line(aes(y = R), colour = "black") + 
+
+seir_plot <- ggplot(fitted_cumulative_incidence %>% filter(Date >= ymd(sir_start_date)),aes(x = Date)) + 
+  geom_line(aes(y = I), colour = "red",linetype = "dashed") + 
+ # geom_line(aes(y = E), colour = "green",linetype = "dashed") + 
+  geom_line(aes(y = R), colour = "blue",linetype = "dashed") + 
   
   #annotate(geom="text",x=ymd("2020-03-20")-0.3,y=10,label="Quarantine start",angle=90,size=2.5)+
   #geom_vline(xintercept = ymd("2020-03- 20"), 
@@ -179,14 +173,21 @@ fitted_cumulative_incidence %>% filter(Date >= ymd(sir_start_date)) %>%
   geom_vline(xintercept = ymd(sir_fitted_date), 
              color = "green", size=0.5)+
   geom_point(aes(y = cumulative_cases-recovered_cases), colour = "orange") + 
-  geom_point(aes(y = recovered_cases), colour = "black") + 
+  geom_point(aes(y = recovered_cases), colour = "blue") + 
   #scale_y_continuous(trans='log10')+
   scale_x_date(date_breaks = "1 day",date_labels = "%d %b")+
-  scale_y_continuous(breaks = scales::pretty_breaks(n = 20))+
-  labs(y = "Cumulative incidence", title = paste("COVID-19 fitted vs observed cumulative incidence,",province), 
-       subtitle = "(red=fitted incidence from SEIR model, orange=observed incidence, black=observed recovered)")+
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10))+
+  #geom_text(aes(x=Date, y=I+100,label=round(I)),size=3)+
+  
+  geom_text(aes(x=Date, y=I-100,label=round(I)),size=3,color='red')+
+  geom_text(aes(x=Date, y=cumulative_cases - recovered_cases+100,label=round(cumulative_cases - recovered_cases)),size=3,color='orange')+
+  
+  
+  labs(y = "Number of Cases", title = paste("COVID-19 fitted vs observed confirmed,",province), 
+       subtitle = "(red= SEIR fitted active, orange=active, blue= recovered, labels refers to predicted values)")+
   theme_bw()+
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-ggsave(filename=paste("images/sir_",province,".png",sep=""),height = 3, width = 6)
-plotly::ggplotly()
+ggsave(filename=paste("images/seir_",province,".png",sep=""),height = 3, width = 6)
+
+seir_plot
 
