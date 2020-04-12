@@ -6,10 +6,10 @@ The dataset
 
 The dataset was produced using *only* the official information provided by the Argentine Ministry of Health. [*available here*](https://www.argentina.gob.ar/coronavirus/informe-diario)
 
-The dataset contains daily information from mars 5th, when the first case was reported. A total of 30 variables are included. All the variables contain daily information with the exceptin of the those starting with `total_`, which refers to cumulative values.
+The dataset contains daily information from mars 5th, when the first case was reported. A total of 33 variables are included. All the variables contain daily information with the exceptin of the those starting with `total_`, which refers to cumulative values.
 
 ``` r
-names(covid19_arg)
+names(covid19_arg)[1:33]
 ```
 
     ##  [1] "date"                    "total_cases"            
@@ -28,7 +28,7 @@ names(covid19_arg)
     ## [27] "Santa Cruz"              "Santa Fe"               
     ## [29] "Santiago del Estero"     "Tierra del Fuego"       
     ## [31] "San Juan"                "La Rioja"               
-    ## [33] "Tucumán"                 "X34"
+    ## [33] "Tucumán"
 
 Example
 =======
@@ -84,7 +84,7 @@ Total number of deaths per province
 -----------------------------------
 
 ``` r
-covid19_arg[,c(12:27)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%
+covid19_arg[,c(12:33)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%
   pivot_longer(-date,names_to = "Province", values_to = "total") %>% group_by(Province) %>% summarise(total_cases=sum(total)) %>% arrange((total_cases)) %>%
    ggplot()+
   geom_col(aes(x=Province,y=total_cases),fill='orange')+
