@@ -5,7 +5,7 @@ Projection for the next 15 days in several countries using a SEIRQRDP model base
 
 Source code at [github]()
 
-**DISCLAIMER** Dot not consider these projections seriously. I'm far from being an expert on this field. They were made just for testing for fun.
+**DISCLAIMER** Dot not consider these projections seriously. I'm far from being an expert on this field. They were made just for testing and fun.
 
 Argentina
 =========
@@ -61,6 +61,11 @@ ggsave(filename = paste("images/SEIQRDP_",region,".png",sep=""),height = 6,width
 ![](./images/SEIQRDP_Brazil.png) \# Italy
 
 ``` r
+start_date<-(today()-18) 
+fitted_date<-(start_date+15) 
+start_date <- start_date %>% format('%m-%d-%Y')
+fitted_date <- fitted_date %>% format('%m-%d-%Y')
+
 region ="Italy"
 population=61e6
 data<-get_jhu_data(region=region,population = population )
