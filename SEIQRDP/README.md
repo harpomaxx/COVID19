@@ -134,6 +134,10 @@ forecast <-15
 forecast_data <- SEIQRDP_predict(forecast,params,data_fit,data)
 plot<-SEIQRDP_plot(forecast_data,region)
 ggsave(filename = paste("images/SEIQRDP_Korea.png",sep=""),height = 6,width = 6,plot = plot)
+
+calculate_double_time(forecast_data)
 ```
+
+    ## [1] 0
 
 ![](./images/SEIQRDP_Korea.png)
