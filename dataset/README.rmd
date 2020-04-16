@@ -22,10 +22,10 @@ covid19_arg<-read_delim("COVID19_ARG.tsv",delim ='\t')
 The dataset was produced using *only* the official information provided by the Argentine Ministry of Health. 
 [*available here*](https://www.argentina.gob.ar/coronavirus/informe-diario)
 
-The dataset contains daily information from mars 5th, when the first case was reported. A total of 33 variables are included. All the variables contain daily information with the exceptin of the those starting with `total_`, which refers to cumulative values.
+The dataset contains daily information from mars 5th, when the first case was reported. A total of 34 variables are included. All the variables contain daily information with the exceptin of the those starting with `total_`, which refers to cumulative values.
 
 ```{r}
-names(covid19_arg)[1:33]
+names(covid19_arg)[1:34]
 ```
 
 
@@ -139,11 +139,46 @@ ggplot()+
 
 ![](./images/totalprovinces.png)
 
-## Simple SIR model for ARG Forcasting for next 5 days
+## SEIQRDP model for ARG Forcasting for next 15 days
 
 Model adapted from [Tim Churches's](https://timchurches.github.io/blog/posts/2020-02-18-analysing-covid-19-2019-ncov-outbreak-data-with-r-part-1) blog.
+```{r message=FALSE, warning=FALSE, include=FALSE}
+source("../SEIQRDP/SEIQRDP.R")
+LT <- 5    #1-14 days, latent time in days, incubation period, gamma^(-1)   
+QT <- 5  #Quarantine time in days, recovery time, infectious period, delta^(-1)
+alpha_guess <- 1.0
+beta_guess <- 1.0
+gamma_guess <- 1 / LT
+delta_guess <- 1 / QT
+kappa_guess <- 0.01 #dead rate
+lambda_guess <- 0.08 # recover rate
 
-![](./images/sir_Argentina.png)
+start_date<-(today()-15) 
+fitted_date<-(start_date+14) 
+start_date <- start_date %>% format('%m-%d-%Y')
+fitted_date <- fitted_date %>% format('%m-%d-%Y')
 
-![](./images/geseir_Argentina.png)
+region = "Argentina"
+population =  40e6
+
+data<-get_jhu_data(region=region,population = population )
+#data$cumulative_incidence$infected_cases<-unlist(data$cumulative_incidence[,2] *5)
+#data$cumulative_incidence$recovered_cases<-unlist(data$cumulative_incidence[,3] *5)
+
+data_fit<-create_fit_data(data,fitted_date = fitted_date,start_date = start_date)
+parameters<-c(alpha_guess,beta_guess,gamma_guess,delta_guess,kappa_guess,lambda_guess)
+
+
+
+params<-SEIQRDP_fit(parameters,data_fit)
+forecast <-15
+forecast_data <- SEIQRDP_predict(forecast,params,data_fit,data)
+plot<-SEIQRDP_plot(forecast_data,region)
+
+
+ggsave(plot,filename = "images/SEIQRDP_Argentina.png",width = 3, height = 6) 
+```
+
+![](./images/SEIQRDP_Argentina.png)
+
 

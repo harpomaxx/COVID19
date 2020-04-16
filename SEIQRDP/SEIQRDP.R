@@ -97,6 +97,7 @@ calculate_peak<-function(data){
   return(list("date"=date,"value"=value))
 }
 
+
 ## Doubling time
 calculate_double_time<-function(data){
 
@@ -106,13 +107,26 @@ calculate_double_time<-function(data){
 
   final_time<-as.integer(mdy(data$fitted_date)-mdy(data$start_date))
   active_final<-data$forecast$infected_cases[final_time] -
-    data$corecast$dead_cases[final_time] -
+    data$forecast$dead_cases[final_time] -
     data$forecast$recovered_cases[final_time]
-
-  doubling_time<-round(log(2)*final_time/
+  if (active_final > active_initial){
+      doubling_time<-round(log(2)*final_time/
                        (log(data$forecast$infected_cases[final_time]) - 
                           log(data$forecast$infected_cases[1])))
+  }else
+      doubling_time<-0
+    
  return(doubling_time)
+}
+
+pretty_print_num<-function(num){
+  if ( num >= 1000 ) {
+    num <- num/1000
+    res <- paste(round(num,digits = 1),"k",sep="")
+  } else {
+    res <- paste(num) 
+  }
+  return (res)
 }
 
 # Plot the results
@@ -122,55 +136,81 @@ SEIQRDP_plot<-function(data,province="NA Region"){
   
   double_time <- calculate_double_time(data)
   peak <- calculate_peak(data)
+  ymax <- max(data$forecast$Q)
   plot <-
   ggplot(data$forecast %>% filter(Date >= mdy(data$start_date)),
          aes(x = Date)) +
   
   
-  geom_line(aes(y = Q, colour = "active"), linetype = "dashed") +
-  geom_line(data = data$forecast %>% filter(Date<=mdy(data$fitted_date)), aes(y = Q, colour = "active")) +
+  geom_line(aes(y = Q, color="active",linetype = "projected"), alpha=0.3) +
+  geom_line(data = data$forecast %>% filter(Date<=mdy(data$fitted_date)), aes(y = Q, colour = "active", linetype="fitted"),size=1) +
   
-  geom_line(aes(y = D, colour = "dead"), linetype = "dashed") +
-  geom_line(data = data$forecast %>% filter(Date<=mdy(data$fitted_date)), aes(y = D, colour = "dead")) +
+  geom_line(aes(y = D, colour = "dead", linetype = "projected"),alpha=0.3) +
+  geom_line(data = data$forecast %>% filter(Date<=mdy(data$fitted_date)), aes(y = D, colour = "dead",linetype="fitted"),size=1) +
   
-  geom_line(aes(y = R, colour = "recover"), linetype = "dashed") +
-  geom_line(data = data$forecast %>% filter(Date<=mdy(data$fitted_date)), aes(y = R, colour = "recover")) +
+  geom_line(aes(y = R, colour = "recover", linetype = "projected"),alpha=0.3) +
+  geom_line(data = data$forecast %>% filter(Date<=mdy(data$fitted_date)), aes(y = R, colour = "recover",linetype="fitted"),size=1) +
   
-  ####geom_line(aes(y = I, colour = "green",linetype = "dashed")) +
-  ###geom_line(aes(y = E), colour = "green") +
-  ####annotate(geom="text",x=ymd(data$fitted_date)-0.3,y=1000,label="Fitted Model",angle=90,size=2.5)+
+  #geom_line(aes(y = I, colour = "infected",linetype = "dashed")) +
+  #geom_line(aes(y = E), colour = "green") +
+  #annotate(geom="text",x=mdy(data$fitted_date)-0.3,y=ymax,label="Fitted Model",angle=90,size=2.5,alpha=0.3)+
     
   #geom_vline(xintercept = mdy(data$fitted_date), color = "green", size = 0.5) +
-  geom_point(aes(y = ( data$forecast$infected_cases - data$forecast$recovered_cases - data$forecast$dead_cases )), colour = "orange",shape=1) +
+  geom_point(aes(y = ( data$forecast$infected_cases - data$forecast$recovered_cases - data$forecast$dead_cases ),
+                 shape="observations"), colour = "orange") +
   geom_point(aes(y = data$forecast$recovered_cases), colour = "blue",shape=1) +
   geom_point(aes(y = data$forecast$dead_cases), colour = "black",shape=1) +
-  geom_point(aes(y=peak$value,x=peak$date), colour="orange",size=3,shape=7)+
+  geom_point(aes(y=peak$value,x=peak$date), colour="orange",size=3,shape=6)+
     
   geom_text(data=
-              data$forecast[seq(1,length(data$forecast$Q) ,by = 3),]
+              data$forecast[seq(1,length(data$forecast$Q) ,by = 5),]
             ,
-            aes(x=Date, y=Q+(Q*0.09),label=round(Q)),size=3,color='orange'
+            aes(x=Date, y=Q+(Q*0.09),label=pretty_print_num(round(Q))),size=3,color='orange'
   )+
+    
+    geom_point(data=
+                data$forecast[seq(1,length(data$forecast$Q) ,by = 5),]
+              ,
+              aes(x=Date, y=Q),size=1,color='orange'
+    )+  
+  #geom_text(data=
+  #              data$forecast[seq(1,length(data$forecast$R) ,by = 5),]
+  #            ,
+  #            aes(x=Date, y=R+(R*0.09),label=pretty_print_num(round(R))),size=3,color='blue'
+  #  )+
   
   
   scale_x_date(date_breaks = "3 day", date_labels = "%d %b") +
   scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
   scale_color_manual("", 
                      #breaks = c("Active", "Recover", "Dead"),
-                     values = c( "active"="orange", 
+                     values = c( 
+                                 "active"="orange", 
                                  "dead"="black", 
-                                 "recover"="blue")) +
+                                 "recover"="blue"
+                                
+                                 #"infected"="yellow",
+                                 #"exposed"="green"
+                                  )) +
+    
+    scale_linetype_manual("",values=c("projected"="dashed","fitted"="solid"))+
+    scale_shape_manual("",values=c("observations"=1))+
+
+
   
  labs(
      y = "Number of Cases", x= "Time in Days",
     title = paste(province, "COVID19 forecast. SEIQRDP model (Peng et al. 2020)"), subtitle=
       paste("Fitted with ", mdy(data$fitted_date)- mdy(data$start_date), " days. Forecasted for ",
-            forecast," days from ", mdy(data$fitted_date),".\nExpected Peak at ",peak$date,
+            forecast," days from ", mdy(data$fitted_date),".\nPeak expected in ",ymd(peak$date) - today()," days",
             ". Doubling every ",double_time," days.",sep=""), caption = "Source: Johns Hopkins CSSE"
   ) +
   theme_bw() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))+
-  theme(legend.position="top")
+  theme(legend.position="top")+
+  guides(
+    linetype=guide_legend(keywidth = 2, keyheight = 1),
+    colour=guide_legend(keywidth = 2, keyheight = 1))
   #ggsave(filename = paste("images/SEIQRDP_", province, ".png", sep = ""),height = 3, width = 6)
   plot
 }

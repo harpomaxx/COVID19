@@ -6,10 +6,10 @@ The dataset
 
 The dataset was produced using *only* the official information provided by the Argentine Ministry of Health. [*available here*](https://www.argentina.gob.ar/coronavirus/informe-diario)
 
-The dataset contains daily information from mars 5th, when the first case was reported. A total of 33 variables are included. All the variables contain daily information with the exceptin of the those starting with `total_`, which refers to cumulative values.
+The dataset contains daily information from mars 5th, when the first case was reported. A total of 34 variables are included. All the variables contain daily information with the exceptin of the those starting with `total_`, which refers to cumulative values.
 
 ``` r
-names(covid19_arg)[1:33]
+names(covid19_arg)[1:34]
 ```
 
     ##  [1] "date"                    "total_cases"            
@@ -20,15 +20,15 @@ names(covid19_arg)[1:33]
     ## [11] "new_cases"               "new_deaths"             
     ## [13] "CABA"                    "Buenos Aires"           
     ## [15] "Chaco"                   "Córdoba"                
-    ## [17] "Corrientes"              "Entre Ríos"             
-    ## [19] "Jujuy"                   "La Pampa"               
-    ## [21] "Mendoza"                 "Misiones"               
-    ## [23] "Neuquén"                 "Río Negro"              
-    ## [25] "Salta"                   "San Luis"               
-    ## [27] "Santa Cruz"              "Santa Fe"               
-    ## [29] "Santiago del Estero"     "Tierra del Fuego"       
-    ## [31] "San Juan"                "La Rioja"               
-    ## [33] "Tucumán"
+    ## [17] "Chubut"                  "Corrientes"             
+    ## [19] "Entre Ríos"              "Jujuy"                  
+    ## [21] "La Pampa"                "Mendoza"                
+    ## [23] "Misiones"                "Neuquén"                
+    ## [25] "Río Negro"               "Salta"                  
+    ## [27] "San Luis"                "Santa Cruz"             
+    ## [29] "Santa Fe"                "Santiago del Estero"    
+    ## [31] "Tierra del Fuego"        "San Juan"               
+    ## [33] "La Rioja"                "Tucumán"
 
 Example
 =======
@@ -148,11 +148,9 @@ ggplot()+
 
 ![](./images/totalprovinces.png)
 
-Simple SIR model for ARG Forcasting for next 5 days
----------------------------------------------------
+SEIQRDP model for ARG Forcasting for next 15 days
+-------------------------------------------------
 
 Model adapted from [Tim Churches's](https://timchurches.github.io/blog/posts/2020-02-18-analysing-covid-19-2019-ncov-outbreak-data-with-r-part-1) blog.
 
-![](./images/sir_Argentina.png)
-
-![](./images/geseir_Argentina.png)
+![](./images/SEIQRDP_Argentina.png)
