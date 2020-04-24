@@ -22,13 +22,13 @@ names(covid19_arg)[1:34]
     ## [15] "Chaco"                   "Córdoba"                
     ## [17] "Chubut"                  "Corrientes"             
     ## [19] "Entre Ríos"              "Jujuy"                  
-    ## [21] "La Pampa"                "Mendoza"                
-    ## [23] "Misiones"                "Neuquén"                
-    ## [25] "Río Negro"               "Salta"                  
-    ## [27] "San Luis"                "Santa Cruz"             
-    ## [29] "Santa Fe"                "Santiago del Estero"    
-    ## [31] "Tierra del Fuego"        "San Juan"               
-    ## [33] "La Rioja"                "Tucumán"
+    ## [21] "La Pampa"                "La Rioja"               
+    ## [23] "Mendoza"                 "Misiones"               
+    ## [25] "Neuquén"                 "Río Negro"              
+    ## [27] "Salta"                   "San Luis"               
+    ## [29] "Santa Cruz"              "Santa Fe"               
+    ## [31] "Santiago del Estero"     "Tierra del Fuego"       
+    ## [33] "San Juan"                "Tucumán"
 
 Example
 =======
