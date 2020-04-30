@@ -5,6 +5,7 @@ library(lubridate)
 library(tidyr)
 require(deSolve)
 library(ggplot2)
+library(scales)
 
 ## Get data from John Hopkins dataset
 get_jhu_data<-function(region="Argentina",population=40e7){
@@ -109,6 +110,7 @@ calculate_double_time<-function(data){
   active_final<-data$forecast$infected_cases[final_time] -
     data$forecast$dead_cases[final_time] -
     data$forecast$recovered_cases[final_time]
+  
   if (active_final > active_initial){
       doubling_time<-round(log(2)*final_time/
                        (log(data$forecast$infected_cases[final_time]) - 
@@ -128,6 +130,11 @@ pretty_print_num<-function(num){
   }
   return (res)
 }
+
+ks <- function (x) { number_format(accuracy = .1,
+                                   scale = 1/1000,
+                                   suffix = "k",
+                                   big.mark = ",")(x) }
 
 # Plot the results
 SEIQRDP_plot<-function(data,province="NA Region"){
@@ -163,9 +170,9 @@ SEIQRDP_plot<-function(data,province="NA Region"){
   geom_point(aes(y=peak$value,x=peak$date), colour="orange",size=3,shape=6)+
     
   geom_text(data=
-              data$forecast[seq(1,length(data$forecast$Q) ,by = 5),]
+              data$forecast[seq(1,length(data$forecast$Q) ,by = 10),] %>% filter(Date>=mdy(data$fitted_date))
             ,
-            aes(x=Date, y=Q+(Q*0.09),label=pretty_print_num(round(Q))),size=3,color='orange'
+            aes(x=Date, y=Q+(Q*0.22),label=ks(round(Q))),size=3,color='orange'
   )+
     
     geom_point(data=
@@ -181,7 +188,8 @@ SEIQRDP_plot<-function(data,province="NA Region"){
   
   
   scale_x_date(date_breaks = "3 day", date_labels = "%d %b") +
-  scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
+  scale_y_continuous(labels = ks)+
+  #scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
   scale_color_manual("", 
                      #breaks = c("Active", "Recover", "Dead"),
                      values = c( 
@@ -203,7 +211,7 @@ SEIQRDP_plot<-function(data,province="NA Region"){
     title = paste(province, "COVID19 forecast. SEIQRDP model (Peng et al. 2020)"), subtitle=
       paste("Fitted with ", mdy(data$fitted_date)- mdy(data$start_date), " days. Forecasted for ",
             forecast," days from ", mdy(data$fitted_date),".\nPeak expected in ",ymd(peak$date) - today()," days",
-            ". Doubling every ",double_time," days.",sep=""), caption = "Source: Johns Hopkins CSSE"
+            ". Doubling every ",double_time," days.",sep=""), caption = "Source: Johns Hopkins CSSE\n@harpolabs"
   ) +
   theme_bw() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))+
@@ -254,7 +262,7 @@ SEIQRDP_predict  <- function(time,parameters,fit_data,data){
   parms = list(parameters,kappa,lambda)
 ))
   
-  forecast<-forecast %>% mutate(Date=mdy(fit_data$start_date)+ days(t)) %>% 
+  forecast<-forecast %>% mutate(Date=mdy(fit_data$start_date)+ days(t-1)) %>% 
   left_join(data$cumulative_incidence)
   
   return(list("forecast"=forecast,
