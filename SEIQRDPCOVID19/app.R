@@ -116,7 +116,7 @@ ui <- fluidPage(
                        "Days considered for projecting:",
                        min = 1,
                        max = 365,
-                       value = 30)
+                       value = 30) 
            #)
     ),
     column(2, offset = 0,    
@@ -124,8 +124,8 @@ ui <- fluidPage(
            sliderInput("Fdays",
                      "Days considered for fitting:",
                      min = 1,
-                     max = 30,
-                     value = 10)
+                     max = 60, 
+                     value = 10) 
            #)
            
     ),
@@ -158,9 +158,9 @@ ui <- fluidPage(
     column(2, 
            dateInput("in_date", 
                      label = "Current Date",
-                                        value = today(),
-                                         min   = today()-30,
-                                         max   = today()
+                                        value = today()-15,
+                                         min   = today()-60,
+                                         max   = today()-1
                      
                      )
            
@@ -191,7 +191,8 @@ server <- function(input, output,session) {
   
   
   build_model <- reactive ({
-    start_date<-(input$in_date-(input$Fdays+1)) 
+    print(paste("Fitted",input$Fdays,"days"))
+    start_date<-(input$in_date-(input$Fdays)) 
     fitted_date<-(start_date+input$Fdays) 
     
     start_date <- start_date %>% format('%m-%d-%Y')
@@ -206,7 +207,7 @@ server <- function(input, output,session) {
                 "data_fit"=data_fit,
                 "params"=params))
     
-  })
+  }) 
   
    output$modelPlot <- renderPlot({
 
@@ -227,7 +228,7 @@ server <- function(input, output,session) {
      double_time <- calculate_double_time(forecast_data)
      peak <- calculate_peak(forecast_data)
      print(paste0(ymd(peak$date) - today(), "d"))
-     })
+     }) 
    
    output$double <- renderText({
      model<-build_model()
@@ -236,7 +237,7 @@ server <- function(input, output,session) {
      double_time <- calculate_double_time(data)
      print(paste0(double_time,"d"))
      
-   })
+   }) 
   
 }
 

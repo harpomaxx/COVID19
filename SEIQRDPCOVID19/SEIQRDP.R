@@ -167,17 +167,40 @@ SEIQRDP_plot<-function(data,province="NA Region"){
   #annotate(geom="text",x=mdy(data$fitted_date)-0.3,y=ymax,label="Fitted Model",angle=90,size=2.5,alpha=0.3)+
     
   #geom_vline(xintercept = mdy(data$fitted_date), color = "green", size = 0.5) +
-  geom_point(aes(y = ( data$forecast$infected_cases - data$forecast$recovered_cases - data$forecast$dead_cases ),
+  geom_point(aes(y = ( infected_cases - recovered_cases - dead_cases ),
                  shape="observations"), colour = "orange") +
-  geom_point(aes(y = data$forecast$recovered_cases), colour = "blue",shape=1) +
-  geom_point(aes(y = data$forecast$dead_cases), colour = "black",shape=1) +
+  geom_point(aes(y = recovered_cases), colour = "blue",shape=1) +
+  geom_point(aes(y = dead_cases), colour = "white",shape=1) +
   geom_point(aes(y=peak$value,x=peak$date), colour="orange",size=3,shape=6)+
     
   geom_text(data=
-              data$forecast[seq(1,length(data$forecast$Q) ,by = 10),] %>% filter(Date>=mdy(data$fitted_date))
+              data$forecast[seq(1,length(data$forecast$Q) ,by = 2),] %>% 
+              filter(Date>=mdy(data$fitted_date))  %>% filter(Date<=today()-1)
             ,
-            aes(x=Date, y=Q+(Q*0.22),label=ks(round(Q))),size=4,color='orange'
-  )+
+            #aes(x=Date, y=Q+(Q*0.22),label=ks(round(Q))),size=4,color='orange'
+             aes(x=Date, y= (infected_cases-dead_cases-recovered_cases)+
+                   ( (infected_cases-dead_cases-recovered_cases) *0.22),
+                 
+                 label=paste(round((Q- (infected_cases-dead_cases-recovered_cases) )
+                                                  /(infected_cases-dead_cases-recovered_cases) 
+                                                ,digits = 2)*100,"%",sep="")
+                 ),size=4,color='orange')+
+    
+    geom_text(data=
+                data$forecast[seq(1,length(data$forecast$R) ,by = 2),] %>% 
+                filter(Date>=mdy(data$fitted_date))  %>% filter(Date<=today()-1)
+              ,
+              aes(x=Date, y= (recovered_cases)+
+                    ( (recovered_cases) *0.22),
+                  
+                  label=paste(round((R- (recovered_cases) )
+                                    /(recovered_cases) 
+                                    ,digits = 2)*100,"%",sep="")
+              ),size=4,color='blue')+
+    
+    
+    
+
     
     geom_point(data=
                 data$forecast[seq(1,length(data$forecast$Q) ,by = 5),]
@@ -207,6 +230,7 @@ SEIQRDP_plot<-function(data,province="NA Region"){
     
     scale_linetype_manual("",values=c("projected"="dashed","fitted"="solid"))+
     scale_shape_manual("",values=c("observations"=1))+
+    #scale_y_log10(labels = ks) +
 
 
   
@@ -262,7 +286,7 @@ SEIQRDP_predict  <- function(time,parameters,fit_data,data){
   lambda0 <- parameters['lambda0']
   kappa0 <- parameters['kappa0']
   lambda <-  lambda0 * (1 - exp(-lambda0 * (t*100)))
-  kappa  <- kappa0  *  exp(-kappa0 * (t*10))
+  kappa  <- kappa0  *  exp(-kappa0 * (t))
   
   
   forecast <- data.frame(ode(
