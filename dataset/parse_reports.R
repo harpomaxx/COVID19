@@ -7,6 +7,11 @@ library(lubridate)
 library(dplyr)
 library(readr)
 
+arreglar_porcentaje<-function(x){
+ x %>% str_replace(",",".") %>% as.numeric() %>% "/"(100)
+}
+
+
 dir_reportes<-"/home/harpo/informes"
 files <- list.files(path = dir_reportes, pattern = "pdf$")
 report<-data.frame()
@@ -68,15 +73,16 @@ for(inf_file in files){
   colnames(provincias)<-t(provincias_col_names)
   provincias<-provincias %>% as.data.frame()
   
-  new_report<-data.frame(file=inf_file,total_infectados=total_infectados,
-                         total_fallecidos=total_fallecidos,
-                         total_recuperados=total_recuperados,
-                         total_casos_nuevos=total_casos_nuevos,
-                         total_importados=total_importados,
-                         total_contacto=total_contacto,
-                         total_comunitario=total_comunitario,
-                         total_descartados=total_descartados)
+  new_report<-data.frame(file=inf_file,total_infectados=total_infectados %>% str_remove("\\."),
+                         total_fallecidos=total_fallecidos %>% str_remove("\\."),
+                         total_recuperados=total_recuperados %>% str_remove("\\."),
+                         total_casos_nuevos=total_casos_nuevos %>% str_remove("\\."),
+                         total_importados=total_importados %>% arreglar_porcentaje(),
+                         total_contacto=total_contacto %>% arreglar_porcentaje(),
+                         total_comunitario=total_comunitario %>% arreglar_porcentaje(),
+                         total_descartados=total_descartados %>% arreglar_porcentaje())
   new_report<-cbind(new_report,provincias)
   report<-rbind(report,new_report)
 }
 report<- report %>% mutate(date=dmy(str_sub(file,1,8))-1) %>% arrange(date) %>% readr::write_csv(paste0(dir_reportes,"/covid19_argentina.csv"))
+View(report)
