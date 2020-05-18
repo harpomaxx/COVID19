@@ -109,6 +109,14 @@ ui <- fluidPage(
        
           ),
     
+    column(2,
+           
+           checkboxGroupInput("compartiment", label = "Compartiments : ", 
+                              choices = list("Infected" = 1, "Exposed" = 2 ,"Recovered" =3, "Dead" = 4),
+                              selected = 3)
+           
+    ),
+    
     
     column(2,
            #div(style="height: 20px;font-size: 15px;",
@@ -160,7 +168,7 @@ ui <- fluidPage(
                      label = "Current Date",
                                         value = today()-15,
                                          min   = today()-60,
-                                         max   = today()-1
+                                         max   = today()-2
                      
                      )
            
@@ -193,7 +201,8 @@ server <- function(input, output,session) {
   build_model <- reactive ({
     print(paste("Fitted",input$Fdays,"days"))
     start_date<-(input$in_date-(input$Fdays)) 
-    fitted_date<-(start_date+input$Fdays) 
+    #fitted_date<-(start_date+input$Fdays) 
+    fitted_date<-(input$in_date) 
     
     start_date <- start_date %>% format('%m-%d-%Y')
     fitted_date <- fitted_date %>% format('%m-%d-%Y')
@@ -216,8 +225,9 @@ server <- function(input, output,session) {
      #print(model)
      forecast <-input$Pdays+1
      forecast_data <- SEIQRDP_predict(forecast,model$params,model$data_fit,model$data)
-     plot_arg<-SEIQRDP_plot(forecast_data,paste(input$region," [Pop. ", ms(countries_pop[[input$region]]) ,"]",sep=""))
+     plot_arg<-SEIQRDP_plot(forecast_data,paste(input$region," [Pop. ", ms(countries_pop[[input$region]]) ,"]",sep=""), input$compartiment)
      plot_arg
+       
     }) 
    
    output$peak <- renderText({

@@ -1,4 +1,5 @@
-#remove (list = objects())
+
+# shinyapp version
 library(readr)
 library(dplyr)
 library(lubridate)
@@ -141,36 +142,28 @@ ms <- function (x) { number_format(accuracy = .1,
                                    suffix = "m",
                                    big.mark = ",")(x) }
 # Plot the results
-SEIQRDP_plot<-function(data,province="NA Region"){
+SEIQRDP_plot<-function(data,province="NA Region",compartiment){
   forecast<-nrow(data$forecast) - data$forecast %>% 
     filter(Date == mdy(data$fitted_date)) %>% select(time)
   
   double_time <- calculate_double_time(data)
   peak <- calculate_peak(data)
-  ymax <- max(data$forecast$Q)
+  #ymax <- max(data$forecast$Q)
+  ymax <-peak$value
   plot <-
   ggplot(data$forecast %>% filter(Date >= mdy(data$start_date)),
          aes(x = Date)) +
   
-  
+   
   geom_line(aes(y = Q, color="active",linetype = "projected"), alpha=0.3) +
   geom_line(data = data$forecast %>% filter(Date<=mdy(data$fitted_date)), aes(y = Q, colour = "active", linetype="fitted"),size=1) +
   
-  geom_line(aes(y = D, colour = "dead", linetype = "projected"),alpha=0.3) +
-  geom_line(data = data$forecast %>% filter(Date<=mdy(data$fitted_date)), aes(y = D, colour = "dead",linetype="fitted"),size=1) +
   
-  geom_line(aes(y = R, colour = "recover", linetype = "projected"),alpha=0.3) +
-  geom_line(data = data$forecast %>% filter(Date<=mdy(data$fitted_date)), aes(y = R, colour = "recover",linetype="fitted"),size=1) +
-  
-  #geom_line(aes(y = I, colour = "infected",linetype = "dashed")) +
-  #geom_line(aes(y = E), colour = "green") +
   #annotate(geom="text",x=mdy(data$fitted_date)-0.3,y=ymax,label="Fitted Model",angle=90,size=2.5,alpha=0.3)+
     
   #geom_vline(xintercept = mdy(data$fitted_date), color = "green", size = 0.5) +
   geom_point(aes(y = ( infected_cases - recovered_cases - dead_cases ),
                  shape="observations"), colour = "orange") +
-  geom_point(aes(y = recovered_cases), colour = "blue",shape=1) +
-  geom_point(aes(y = dead_cases), colour = "white",shape=1) +
   geom_point(aes(y=peak$value,x=peak$date), colour="orange",size=3,shape=6)+
     
   geom_text(data=
@@ -186,18 +179,7 @@ SEIQRDP_plot<-function(data,province="NA Region"){
                                                 ,digits = 2)*100,"%",sep="")
                  ),size=4,color='orange')+
     
-    geom_text(data=
-                data$forecast[seq(1,length(data$forecast$R) ,by = 2),] %>% 
-                filter(Date>=mdy(data$fitted_date))  %>% filter(Date<=today()-1)
-              ,
-              aes(x=Date, y= (recovered_cases)+
-                    ( (recovered_cases) *0.22),
-                  
-                  label=paste(round((R- (recovered_cases) )
-                                    /(recovered_cases) 
-                                    ,digits = 2)*100,"%",sep="")
-              ),size=4,color='blue')+
-    
+   
     
     
 
@@ -222,10 +204,10 @@ SEIQRDP_plot<-function(data,province="NA Region"){
                      values = c( 
                                  "active"="orange", 
                                  "dead"="white", 
-                                 "recover"="blue"
+                                 "recover"="blue",
                                 
-                                 #"infected"="yellow",
-                                 #"exposed"="green"
+                                 "infected"="yellow",
+                                 "exposed"="green"
                                   )) +
     
     scale_linetype_manual("",values=c("projected"="dashed","fitted"="solid"))+
@@ -254,6 +236,41 @@ SEIQRDP_plot<-function(data,province="NA Region"){
     linetype=guide_legend(keywidth = 2, keyheight = 1),
     colour=guide_legend(keywidth = 2, keyheight = 1))
   #ggsave(filename = paste("images/SEIQRDP_", province, ".png", sep = ""),height = 3, width = 6)
+  
+  if ("1" %in% compartiment )
+      plot <- plot + geom_line(aes(y = I, color="infected",linetype = "projected"), alpha=0.3)
+  
+  if ("2" %in% compartiment )
+     plot <- plot + geom_line(aes(y = E, color="exposed",linetype = "projected"), alpha=0.3) 
+    
+  if ("4" %in% compartiment ){
+    plot<- plot + 
+    geom_line(aes(y = D, colour = "dead", linetype = "projected"),alpha=0.3) +
+    geom_line(data = data$forecast %>% filter(Date<=mdy(data$fitted_date)), aes(y = D, colour = "dead",linetype="fitted"),size=1)+
+    geom_point(aes(y = dead_cases), colour = "white",shape=1) 
+      
+  }    
+  
+  if ("3" %in% compartiment ){
+    plot<- plot +
+    geom_line(aes(y = R, colour = "recover", linetype = "projected"),alpha=0.3) +
+    geom_line(data = data$forecast %>% filter(Date<=mdy(data$fitted_date)), aes(y = R, colour = "recover",linetype="fitted"),size=1)+
+    geom_point(aes(y = recovered_cases), colour = "blue",shape=1) +
+    geom_text(data=
+                  data$forecast[seq(1,length(data$forecast$R) ,by = 2),] %>% 
+                  filter(Date>=mdy(data$fitted_date))  %>% filter(Date<=today()-1)
+                ,
+                aes(x=Date, y= (recovered_cases)+
+                      ( (recovered_cases) *0.22),
+                    
+                    label=paste(round((R- (recovered_cases) )
+                                      /(recovered_cases) 
+                                      ,digits = 2)*100,"%",sep="")
+                ),size=4,color='blue')
+      
+      
+  }  
+  
   plot
 }
 
