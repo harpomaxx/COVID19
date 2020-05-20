@@ -1,0 +1,222 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+library(stringr)
+LT <- 5    #1-14 days, latent time in days, incubation period, gamma^(-1)   
+QT <- 14  #Quarantine time in days, recovery time, infectious period, delta^(-1)
+alpha_guess <- 1.0
+beta_guess <- 1.0
+gamma_guess <- 1 / LT
+delta_guess <- 1 / QT
+kappa_guess <- 0.01 #dead rate
+lambda_guess <- 0.08 # recover rate
+region = "Argentina"
+population =  46e6
+data<-get_jhu_data(region=region, population = population )
+```
+
+```{r}
+offset<-5
+models<-list()
+for (i in 7:28){
+  
+  start_date<-(today()-offset-i) 
+  fitted_date<-(today()-offset) 
+  start_date <- start_date %>% format('%m-%d-%Y')
+  fitted_date <- fitted_date %>% format('%m-%d-%Y')
+  
+  print(start_date)
+  print(fitted_date)
+  
+  data_fit<-create_fit_data(data,fitted_date = fitted_date,start_date = start_date)
+  parameters<-c(alpha_guess,beta_guess,gamma_guess,delta_guess,kappa_guess,lambda_guess)
+  
+  
+  
+  params<-SEIQRDP_fit(parameters,data_fit)
+  forecast <-91
+  forecast_data <- SEIQRDP_predict(forecast,params,data_fit,data)
+  models[[i-6]]<-forecast_data$forecast
+  #plot_arg<-SEIQRDP_plot(forecast_data,region)
+  
+  
+  #ggsave(plot_arg,filename = paste0("./SEIQRDP_fit_ARG",str_pad(i-7, 3, pad = "0"),".png"),height = 4,width = 9) 
+}
+```
+
+```{r}
+q<-models %>% lapply( function(df){df %>% filter(Date >= today()-offset) %>% select(Q)} )
+r<-models %>% lapply( function(df){df %>% filter(Date >= today()-offset) %>% select(R)} )
+d<-models %>% lapply( function(df){df %>% filter(Date >= today()-offset) %>% select(D)} )
+
+q<-do.call(cbind,q)
+q<-t(q) %>% as.data.frame()
+r<-do.call(cbind,r)
+r<-t(r) %>% as.data.frame()
+d<-do.call(cbind,d)
+d<-t(d) %>% as.data.frame()
+
+colnames(q)<-1:91
+rownames(q)<-1:22
+colnames(r)<-1:91
+rownames(r)<-1:22
+colnames(d)<-1:91
+rownames(d)<-1:22
+
+```
+
+
+```{r message=FALSE, warning=FALSE}
+q1<-q %>% reshape2::melt() %>% group_by(variable) %>% 
+  
+                      dplyr::summarise(mean = gmodels::ci(value)[1], 
+                      lowCI = gmodels::ci(value)[2],
+                      hiCI = gmodels::ci(value)[3], 
+                      sd = gmodels::ci (value)[4])
+
+q1$variable<-as.Date((today()-offset+as.numeric(q1$variable)))
+```
+
+```{r message=FALSE, warning=FALSE}
+r1<-r %>% reshape2::melt() %>% group_by(variable) %>% 
+  
+                      dplyr::summarise(mean = gmodels::ci(value)[1], 
+                      lowCI = gmodels::ci(value)[2],
+                      hiCI = gmodels::ci(value)[3], 
+                      sd = gmodels::ci (value)[4])
+
+r1$variable<-as.Date((today()-offset+as.numeric(r1$variable)))
+```
+
+```{r message=FALSE, warning=FALSE}
+d1<-d %>% reshape2::melt() %>% group_by(variable) %>% 
+                      dplyr::summarise(mean = gmodels::ci(value)[1], 
+                      lowCI = gmodels::ci(value)[2],
+                      hiCI = gmodels::ci(value)[3], 
+                      sd = gmodels::ci (value)[4])
+
+d1$variable<-as.Date((today()-offset+as.numeric(d1$variable)))
+```
+
+```{r}
+
+q1$type<-"Q"
+r1$type<-"R"
+d1$type<-"D"
+p1<-rbind(q1,r1,d1)
+obs<- data$cumulative_incidence %>% filter(Date >= today() - offset)
+plot<-p1 %>%
+  ggplot(aes(x=variable))+
+  geom_point(data=obs,aes(x=Date,y=infected_cases-recovered_cases-dead_cases),color='orange',shape=1)+
+ geom_point(data=obs,aes(x=Date,y=recovered_cases),color='blue',shape=1)+
+ geom_point(data=obs,aes(x=Date,y=dead_cases),color='black',shape=1)+
+
+
+  geom_line(data=p1 %>% filter(type=="Q"), aes(y=mean),color="orange")+
+  geom_line(data=p1 %>% filter(type=="R"), aes(y=mean),color="blue")+
+  geom_line(data=p1 %>% filter(type=="D"), aes(y=mean),color="black")+
+  geom_ribbon(data=p1 %>% filter(type=="Q"), aes(ymin=lowCI, ymax=hiCI),fill='orange', alpha=0.2) + 
+  geom_ribbon(data=p1 %>% filter(type=="R"), aes(ymin=lowCI, ymax=hiCI),fill='blue', alpha=0.2) + 
+  geom_ribbon(data=p1 %>% filter(type=="D"), aes(ymin=lowCI, ymax=hiCI),fill='black', alpha=0.2) + 
+  
+  
+  
+  labs(  y = "Number of Cases", x= "Time in Days",
+         title=paste(region,"COVID19 forecast. SEIQRDP model (Peng et al. 2020)"),
+         subtitle="Forecast for the next 90 days considering 7-21 days for fitting.\nMean and .95 CI")+
+  
+  
+  
+  
+    scale_y_continuous(labels = ks)+
+   scale_x_date(date_breaks = "3 day", date_labels = "%d %b") +
+   theme_bw()+
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+#r<-models %>% lapply( function(df){df %>% filter(Date >= today()-offset) %>% select(R)} )
+#r<-do.call(cbind,r)
+#colnames(r)<-1:15
+#colnames(r)<-paste("day", colnames(r), sep = "_")
+
+#r<-cbind(variable=p1$variable,r)
+#plot+
+#  geom_line(data=r,aes(y=day_1),color='blue')+
+
+  geom_line(data=q,aes(y=day_1),color='orange')
+plot
+plotly::ggplotly()
+
+
+
+```
+
+```{r}
+q1<- q %>% reshape2::melt() %>% group_by(variable) %>% dplyr::summarise(mean=mean(value),sd=sd(value))
+q1$variable<-as.Date((today()-offset+as.numeric(q1$variable)))
+```
+```{r}
+
+
+
+shapiro.test(q$`12`)
+```
+
+```{r}
+d1<- d %>% reshape2::melt() %>% group_by(variable) %>% dplyr::summarise(mean=mean(value),sd=sd(value))
+d1$variable<-as.Date((today()-offset+as.numeric(d1$variable)))
+```
+```{r}
+r1<- r %>% reshape2::melt() %>% group_by(variable) %>% dplyr::summarise(mean=mean(value),sd=sd(value))
+r1$variable<-as.Date((today()-offset+as.numeric(r1$variable)))
+```
+
+```{r}
+
+q1$type<-"Q"
+r1$type<-"R"
+d1$type<-"D"
+p1<-rbind(q1,r1,d1)
+obs<- data$cumulative_incidence %>% filter(Date >= today() - offset)
+plot<-p1 %>%
+  ggplot(aes(x=variable))+
+  geom_point(data=obs,aes(x=Date,y=infected_cases-recovered_cases-dead_cases),color='orange',shape=1)+
+ geom_point(data=obs,aes(x=Date,y=recovered_cases),color='blue',shape=1)+
+ geom_point(data=obs,aes(x=Date,y=dead_cases),color='black',shape=1)+
+
+
+  geom_line(data=p1 %>% filter(type=="Q"), aes(y=mean),color="orange",linetype="dashed")+
+  geom_line(data=p1 %>% filter(type=="R"), aes(y=mean),color="blue",linetype="dashed")+
+  geom_line(data=p1 %>% filter(type=="D"), aes(y=mean),color="black",linetype="dashed")+
+  geom_ribbon(data=p1 %>% filter(type=="Q"), aes(ymin=mean-sd, ymax=mean+sd),fill='orange', alpha=0.2) + 
+  geom_ribbon(data=p1 %>% filter(type=="R"), aes(ymin=mean-sd, ymax=mean+sd),fill='blue', alpha=0.2) + 
+  geom_ribbon(data=p1 %>% filter(type=="D"), aes(ymin=mean-sd, ymax=mean+sd),fill='black', alpha=0.2) + 
+  
+  
+  
+  labs(  y = "Number of Cases", x= "Time in Days",
+         title=paste(region,"COVID19 forecast. SEIQRDP model (Peng et al. 2020)"),
+         subtitle="Forecast for the next 90 days considering 7-21 days for fitting.\nMean and Sd")+
+  
+  
+  
+  
+    scale_y_continuous(labels = ks)+
+    #scale_y_log10()+
+    scale_x_date(date_breaks = "3 day", date_labels = "%d %b") +
+    
+   theme_bw()+
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+plot
+plotly::ggplotly()
+```
+```{r}
+q %>% reshape2::melt() %>% filter(variable == 20)
+
+ggplot(aes(x=variable))+
+  geom_boxplot(aes(y=value),color='orange')+
+  theme_bw()+
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+

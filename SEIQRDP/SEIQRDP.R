@@ -251,9 +251,10 @@ SEIQRDP_predict  <- function(time,parameters,fit_data,data){
   
   lambda0 <- parameters['lambda0']
   kappa0 <- parameters['kappa0']
+  #lambda <-  lambda0 * (1 - exp(-lambda0 * (t*100)))
+  #kappa  <- kappa0  *  exp(-kappa0 * (t*10))
   lambda <-  lambda0 * (1 - exp(-lambda0 * (t*100)))
-  kappa  <- kappa0  *  exp(-kappa0 * (t*10))
-  
+  kappa  <- kappa0  *  exp(-kappa0 * (t))
   
   forecast <- data.frame(ode(
   y = fit_data$init,

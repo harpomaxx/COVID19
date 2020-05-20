@@ -80,7 +80,7 @@ for(inf_file in files){
                          total_importados=total_importados %>% arreglar_porcentaje(),
                          total_contacto=total_contacto %>% arreglar_porcentaje(),
                          total_comunitario=total_comunitario %>% arreglar_porcentaje(),
-                         total_descartados=total_descartados %>% arreglar_porcentaje())
+                         total_descartados=total_descartados %>% str_remove("\\."))
   new_report<-cbind(new_report,provincias)
   report<-rbind(report,new_report)
 }

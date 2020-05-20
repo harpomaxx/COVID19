@@ -31,8 +31,8 @@ delta_guess <- 1 / QT
 kappa_guess <- 0.01 #dead rate
 lambda_guess <- 0.08 # recover rate
 
-start_date<-(today()-14) 
-fitted_date<-(start_date+12) 
+start_date<-(today()-15) 
+fitted_date<-(start_date+15) 
 start_date <- start_date %>% format('%m-%d-%Y')
 fitted_date <- fitted_date %>% format('%m-%d-%Y')
 ```
