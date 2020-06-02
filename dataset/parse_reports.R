@@ -43,8 +43,8 @@ for(inf_file in files){
     if (grepl("^.*[ ]*\\((\\d+\\,?.?\\d*)%\\) son casos de circu.*$",line,perl=T))
       total_comunitario<-gsub("^.*[ ]*\\((\\d+\\,?.?\\d*)%\\) son casos de circu.*$","\\1", line,perl=T)
     
-    if (grepl("^.* es de (\\d+\\.?\\d+), .*$",line,perl=T))
-      total_infectados<-gsub("^.* es de (\\d+\\.?\\d+), .*$","\\1",line,perl=T)
+    if (grepl("^.* (A|a)rgentina es de (\\d+\\.?\\d+)(,)?.*$",line,perl=T))
+      total_infectados<-gsub("^.* (A|a)rgentina es de (\\d+\\.?\\d+)(,)?.*$","\\2",line,perl=T)
     
     if (grepl("^.* (\\d+\\.?\\d+) fallecieron.*$",line,perl=T))
       total_fallecidos<-gsub("^.* (\\d+\\.?\\d+) fallecieron.*$","\\1",line,perl=T)
@@ -57,8 +57,9 @@ for(inf_file in files){
     
     
     #provincias
-    if (grepl("^[ ]*(-|•|)?[ ]*([a-zA-Z áéíóú]+) ((-)?\\d+\\.?\\d*)(\\*+)? (\\||\\/) .*$", line,perl=T)){
-      provincia<-gsub("^[ ]*(-|•|)?[ ]*([a-zA-Z áéíóú]+) ((-)?\\d+\\.?\\d*)(\\*+)? (\\||\\/) .*$","\\2|\\3" , line,perl=T) %>% str_split("\\|",simplify = T)
+    if (grepl("^[ ]*(-|•|)?[ ]*([a-zA-Z áéíóú]+)(\\*+)? ((-)?\\d+\\.?\\d*)(\\*+)?( )?(\\||\\/) .*$", line,perl=T)){
+      provincia<-gsub("^[ ]*(-|•|)?[ ]*([a-zA-Z áéíóú]+)(\\*+)? ((-)?\\d+\\.?\\d*)(\\*+)?( )?(\\||\\/) .*$","\\2|\\4" , line,perl=T) %>% str_split("\\|",simplify = T)
+      print(provincia)
       if (grepl(provincia[1],"Aires"))
         provincia[1]<-"Buenos Aires"
       provincias<-rbind(provincias,cbind(provincia=provincia[1],casos_nuevos=provincia[2]))
