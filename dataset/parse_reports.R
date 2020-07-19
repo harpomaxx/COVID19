@@ -49,6 +49,13 @@ for(inf_file in files){
     if (grepl("^.* (\\d+\\.?\\d+) fallecieron.*$",line,perl=T))
       total_fallecidos<-gsub("^.* (\\d+\\.?\\d+) fallecieron.*$","\\1",line,perl=T)
     
+    if (grepl("^(.*)?fallecidas es (\\d+\\.?\\d+)(\\*+)?.$",line,perl=T))
+      total_fallecidos<-gsub("^(.*)?fallecidas es (\\d+\\.?\\d+)(\\*+)?.$","\\2",line,perl=T)
+    
+    
+    if (grepl("^(\\d+\\.?\\d+)(\\*+)?.$",line,perl=T))
+      total_fallecidos<-gsub("^(\\d+\\.?\\d+)(\\*+)?.$","\\1",line,perl=T)
+    
     if (grepl("^.*altas es de (\\d+\\.?\\d+) .*$",line,perl=T))
       total_recuperados<-gsub("^.*altas es de (\\d+\\.?\\d+) .*$","\\1",line,perl=T)
     

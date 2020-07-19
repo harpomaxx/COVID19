@@ -12,23 +12,23 @@ The dataset contains daily information from mars 5th, when the first case was re
 names(covid19_arg)[1:34]
 ```
 
-    ##  [1] "date"                    "total_cases"            
-    ##  [3] "total_deaths"            "total_recovered"        
-    ##  [5] "total_tests_negatives"   "total_tests"            
-    ##  [7] "total_imported%"         "total_imported_contact%"
-    ##  [9] "total_comunitary%"       "total_under_analysis%"  
-    ## [11] "new_cases"               "new_deaths"             
-    ## [13] "CABA"                    "Buenos Aires"           
-    ## [15] "Chaco"                   "Córdoba"                
-    ## [17] "Chubut"                  "Corrientes"             
-    ## [19] "Entre Ríos"              "Jujuy"                  
-    ## [21] "La Pampa"                "La Rioja"               
-    ## [23] "Mendoza"                 "Misiones"               
-    ## [25] "Neuquén"                 "Río Negro"              
-    ## [27] "Salta"                   "San Luis"               
-    ## [29] "Santa Cruz"              "Santa Fe"               
-    ## [31] "Santiago del Estero"     "Tierra del Fuego"       
-    ## [33] "San Juan"                "Tucumán"
+    ##  [1] "file"                   "total_infectados"      
+    ##  [3] "total_fallecidos"       "total_recuperados"     
+    ##  [5] "total_casos_nuevos"     "total_importados"      
+    ##  [7] "total_contacto"         "total_comunitario"     
+    ##  [9] "total_descartados"      "Buenos Aires"          
+    ## [11] "Ciudad de Buenos Aires" "Catamarca"             
+    ## [13] "Chaco"                  "Chubut"                
+    ## [15] "Córdoba"                "Corrientes"            
+    ## [17] "Entre Ríos"             "Formosa"               
+    ## [19] "Jujuy"                  "La Pampa"              
+    ## [21] "La Rioja"               "Mendoza"               
+    ## [23] "Misiones"               "Neuquén"               
+    ## [25] "Río Negro"              "Salta"                 
+    ## [27] "San Juan"               "San Luis"              
+    ## [29] "Santa Cruz"             "Santa Fe"              
+    ## [31] "Santiago del Estero"    "Tierra del Fuego"      
+    ## [33] "Tucumán"                "date"
 
 Example
 =======
@@ -37,7 +37,7 @@ Just load the dataset first
 ---------------------------
 
 ``` r
-covid19_arg<-read_delim("COVID19_ARG.tsv",delim ='\t')
+covid19_arg<-read_csv("covid19_argentina.csv")
 ```
 
 Simple plots using `tidyverse`
@@ -47,11 +47,11 @@ Total and daily number of confirmed infections
 ----------------------------------------------
 
 ``` r
-covid19_arg<-covid19_arg %>% mutate(date=mdy(date))
+covid19_arg<-covid19_arg %>% mutate(date=ymd(date))
 covid19_arg %>% ggplot()+
-  geom_col(aes(x=date,y=total_cases),fill='orange')+
-  geom_line(aes(x=date,y=new_cases),fill='green')+
-  geom_point(aes(x=date,y=new_cases),fill='green',size=2)+
+  geom_col(aes(x=date,y=total_infectados),fill='orange')+
+  geom_line(aes(x=date,y= total_casos_nuevos),fill='green')+
+  geom_point(aes(x=date,y=total_casos_nuevos),fill='green',size=2)+
     ylab("confirmed infections")+
   theme_bw()+
     scale_x_date(date_breaks = "1 day", date_labels = "%d %b")+
@@ -68,9 +68,9 @@ Total and daily number of confirmed deaths
 
 ``` r
 covid19_arg %>% ggplot()+
-  geom_col(aes(x=date,y=total_deaths),fill='red')+
-  geom_line(aes(x=date,y=new_deaths),fill='green')+
-  geom_point(aes(x=date,y=new_deaths),fill='green',size=2)+
+  geom_col(aes(x=date,y=total_fallecidos),fill='red')+
+  #geom_line(aes(x=date,y=total_),fill='green')+
+  #geom_point(aes(x=date,y=new_deaths),fill='green',size=2)+
     ylab("confirmed deaths")+
   scale_x_date(date_breaks = "1 day", date_labels = "%d %b")+
   theme_bw()+
@@ -84,7 +84,7 @@ Total number of deaths per province
 -----------------------------------
 
 ``` r
-covid19_arg[,c(12:33)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%
+covid19_arg[,c(10:33)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%
   pivot_longer(-date,names_to = "Province", values_to = "total") %>% group_by(Province) %>% summarise(total_cases=sum(total)) %>% arrange((total_cases)) %>%
    ggplot()+
   geom_col(aes(x=Province,y=total_cases),fill='orange')+
@@ -101,10 +101,10 @@ Top 6 provinces with confirmed cases
 ------------------------------------
 
 ``` r
-top_5<-covid19_arg[,c(12:33)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%
+top_5<-covid19_arg[,c(10:33)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%
   pivot_longer(-date,names_to = "Province", values_to = "total") %>% group_by(Province) %>% summarise(total_cases=sum(total)) %>%  top_n(5) %>% select(Province)
 
-covid19_arg[,c(12:33)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%group_by(date) %>%
+covid19_arg[,c(10:33)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%group_by(date) %>%
   pivot_longer(-date,names_to = "Province", values_to = "new_cases") %>% group_by(Province) %>% mutate(cumulative_cases=cumsum(new_cases)) %>% arrange(desc(cumulative_cases)) %>% filter( Province %in% unlist(as.list(top_5))) %>% 
 
   ggplot()+
@@ -127,10 +127,10 @@ Infections per day in Top 6 provinces with confirmed cases
 ----------------------------------------------------------
 
 ``` r
-top_5<-covid19_arg[,c(12:33)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%
+top_5<-covid19_arg[,c(10:33)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%
   pivot_longer(-date,names_to = "Province", values_to = "total") %>% group_by(Province) %>% summarise(total_cases=sum(total)) %>%  top_n(6) %>% select(Province)
 
-covid19_arg[,c(12:33)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%
+covid19_arg[,c(10:33)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%
   pivot_longer(-date,names_to = "Province", values_to = "total") %>% filter( Province %in% unlist(as.list(top_5))) %>% 
 ggplot()+
   geom_col(aes(x=date,y=total))+
@@ -140,17 +140,10 @@ ggplot()+
    scale_x_date(date_breaks = "1 day", date_labels = "%d %b")+
   theme_bw()+
   theme(axis.text.x = element_text(angle = 45, hjust = 1))+
-  facet_wrap(~Province, ncol = 3)+
+  facet_wrap(~Province, ncol = 3,scales = "free")+
   ggsave("images/totalprovinces.png",height = 4,width =6)
 ```
 
 ![](README_files/figure-markdown_github/unnamed-chunk-7-1.png)
 
 ![](./images/totalprovinces.png)
-
-SEIQRDP model for ARG Forcasting for next 15 days
--------------------------------------------------
-
-Model adapted from [Tim Churches's](https://timchurches.github.io/blog/posts/2020-02-18-analysing-covid-19-2019-ncov-outbreak-data-with-r-part-1) blog.
-
-![](./images/SEIQRDP_Argentina.png)

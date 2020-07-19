@@ -16,15 +16,15 @@ library(tibble)
 
 
 ```{r}
-covid19_arg<-read_delim("COVID19_ARG.tsv",delim ='\t')
+covid19_arg<-read_csv("dataset/covid19_argentina.csv")
 ```
 # Number of confirmed infections 
 ```{r}
-covid19_arg<-covid19_arg %>% mutate(date=mdy(date))
+covid19_arg<-covid19_arg %>% mutate(date=ymd(date))
 covid19_arg %>% ggplot()+
-  geom_col(aes(x=date,y=total_cases),fill='orange')+
-  geom_line(aes(x=date,y=new_cases),fill='green')+
-  geom_point(aes(x=date,y=new_cases),fill='green',size=2)+
+  geom_col(aes(x=date,y=total_infectados),fill='orange')+
+  geom_line(aes(x=date,y=total_casos_nuevos),fill='green')+
+  geom_point(aes(x=date,y=total_casos_nuevos),fill='green',size=2)+
 
     ylab("confirmed infections")+
   theme_bw()+
@@ -35,9 +35,9 @@ covid19_arg %>% ggplot()+
 # Number of Confirmed Deaths
 ```{r}
 covid19_arg %>% ggplot()+
-  geom_col(aes(x=date,y=total_deaths),fill='red')+
-  geom_line(aes(x=date,y=new_deaths),fill='green')+
-  geom_point(aes(x=date,y=new_deaths),fill='green',size=2)+
+  geom_col(aes(x=date,y=total_fallecidos),fill='red')+
+#  geom_line(aes(x=date,y=new_deaths),fill='green')+
+#  geom_point(aes(x=date,y=new_deaths),fill='green',size=2)+
 
     ylab("confirmed deaths")+
   scale_x_date(date_breaks = "1 day", date_labels = "%d %b")+
@@ -47,8 +47,8 @@ covid19_arg %>% ggplot()+
 #Number of Deaths per province
 ```{r}
 
-covid19_arg[,c(12:27)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%
-  pivot_longer(-date,names_to = "Province", values_to = "total") %>% group_by(Province) %>% summarise(total_cases=sum(total)) %>% arrange((total_cases)) %>%
+covid19_arg[,c(10:33)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%
+  tidyr::pivot_longer(-date,names_to = "Province", values_to = "total") %>% group_by(Province) %>% summarise(total_cases=sum(total)) %>% arrange((total_cases)) %>%
   
   ggplot()+
   geom_col(aes(x=Province,y=total_cases),fill='orange')+
@@ -59,8 +59,8 @@ covid19_arg[,c(12:27)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covi
 ```
 # Infections per day in some provinces
 ```{r}
-covid19_arg[,c(12:27)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%
-  pivot_longer(-date,names_to = "Province", values_to = "total") %>% filter( Province %in% c("CABA","Buenos Aires","Córdoba")) %>% 
+covid19_arg[,c(10:33)] %>% replace(is.na(.), 0) %>% tibble::add_column(date=covid19_arg$date) %>%
+  tidyr::pivot_longer(-date,names_to = "Province", values_to = "total") %>% filter( Province %in% c("Ciudad de Buenos Aires","Buenos Aires","Córdoba")) %>% 
 ggplot()+
   geom_line(aes(x=date,y=total,color=Province))+
   geom_point(aes(x=date,y=total,color=Province),size=4)+
